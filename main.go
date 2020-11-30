@@ -55,13 +55,36 @@ func search(q string) {
 	}
 	query := bleve.NewMatchQuery(q)
 	search := bleve.NewSearchRequest(query)
-	search.Size = 50
+	search.Size = 6000
 	searchResults, err := index.Search(search)
 	if err != nil {
 		fmt.Println("failed to search index:", err)
 		os.Exit(1)
 	}
-	fmt.Println(searchResults.String())
+
+	postIDs := map[string]struct{}{}
+	for _, sr := range searchResults.Hits {
+		postIDs[sr.ID] = struct{}{}
+	}
+
+	posts, err := load()
+	if err != nil {
+		fmt.Println("failed to load posts:", err)
+		os.Exit(1)
+	}
+
+	var orderedPosts []post
+	for i := 0; i < len(posts); i++ {
+		if _, isInSearchResults := postIDs[posts[i].Title]; isInSearchResults {
+			orderedPosts = append(orderedPosts, posts[i])
+		}
+	}
+
+	for _, v := range orderedPosts {
+		fmt.Println(v.Title, v.Date)
+		fmt.Println(" >", v.Desc)
+		fmt.Println()
+	}
 }
 
 func load() (posts []post, err error) {
