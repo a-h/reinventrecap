@@ -25,10 +25,11 @@ type post struct {
 }
 
 func main() {
-	if len(os.Args) == 1 {
-		flag.Usage()
+	var cmd string
+	if len(os.Args) > 1 {
+		cmd = os.Args[1]
 	}
-	switch os.Args[1] {
+	switch cmd {
 	case "index":
 		index()
 	case "search":
